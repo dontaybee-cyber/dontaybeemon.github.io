@@ -1,0 +1,73 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+name: Lightstep Pre-Deploy Check
+
+# Run on PRs against main and allow manual runs
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+  workflow_dispatch: {}   # allows manual runs from Actions tab
+
+jobs:
+  predeploy:
+    name: Run Lightstep Pre-Deploy Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lightstep Pre-Deploy Check
+        # you may pin to exact commit (commented example)
+        # uses: lightstep/lightstep-action-predeploy@22bec553a6d0fb3de5026acb1159085601f76408
+        uses: lightstep/lightstep-action-predeploy@v0.2.6
+        with:
+          # Replace the values below with either literal values or secrets
+          # Prefer secrets for sensitive tokens
+          lightstep_organization: ${{ secrets.LIGHTSTEP_ORG }}    # optional
+          lightstep_project:      ${{ secrets.LIGHTSTEP_PROJECT }}# optional
+          lightstep_api_key:      ${{ secrets.LIGHTSTEP_API_KEY }} # optional — strongly recommended secret
+          rollbar_api_token:      ${{ secrets.ROLLBAR_API_TOKEN }} # optional
+          pagerduty_api_token:    ${{ secrets.PAGERDUTY_API_TOKEN }} # optional
+          rollup_conditions:      false
+          disable_comment:        false
+
+    permissions:
+      # Give the workflow permission to comment on PRs (if the action writes PR comments)
+      contents: read
+      pull-requests: write
